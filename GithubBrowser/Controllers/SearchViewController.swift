@@ -15,13 +15,22 @@ class SearchViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         self.navigationItem.title = "Search Projects"
         
-        searchProjectBar = UISearchBar(frame: CGRect(x: 0, y: 100, width: view.bounds.width, height: 30))
+        view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchProjectBar)
-        contenTableView = UITableView(frame: CGRect(x: 0, y: 135, width: view.bounds.width, height: view.bounds.height-130), style: .plain)
         view.addSubview(contenTableView)
+    }
+    
+    override func viewDidLayoutSubviews() {
 
+        searchProjectBar.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        searchProjectBar.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        searchProjectBar.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        
+        contenTableView.topAnchor.constraint(equalTo: searchProjectBar.bottomAnchor).isActive = true
+        contenTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        contenTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
     }
 }

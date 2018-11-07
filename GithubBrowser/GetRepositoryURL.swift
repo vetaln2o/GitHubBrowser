@@ -40,8 +40,11 @@ class GetRepositoryURL {
         for repo in urlList {
             getRepositoryInfo(urlString: repo.url) { (repository) in
                 self.repositoryArray.append(repository)
+                //print(self.repositoryArray)
             }
+            //sleep(1)
         }
+        print(self.repositoryArray)
     }
     
     func getRepositoryInfo(urlString: String, completion: @escaping (RepositoryDetail) -> Void) {
@@ -64,8 +67,14 @@ class GetRepositoryURL {
         guard let url = URL(string: urlString) else {return}
         var result = [RepositoryUrl]()
         URLSession.shared.dataTask(with: url) { (data, response, error) in
-            guard data != nil else {return}
-            guard error == nil else {return}
+            guard data != nil else {
+                print("DATA is EMPTY!")
+                return
+            }
+            guard error == nil else {
+                print(error)
+                return
+            }
             do {
                 result = try JSONDecoder().decode([RepositoryUrl].self, from: data!)
                 completion(result)

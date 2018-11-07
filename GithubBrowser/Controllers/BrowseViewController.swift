@@ -19,12 +19,13 @@ class BrowseViewController: UIViewController {
             git = GetRepositoryURL()
         }
         self.navigationItem.title = "Browse Projects"
-        browseTableView = UITableView(frame: CGRect(x: 0, y: 100, width: view.bounds.width, height: view.bounds.height - 100), style: .plain)
+        browseTableView.translatesAutoresizingMaskIntoConstraints = false
         browseTableView.delegate = self
         browseTableView.dataSource = self
         browseTableView.register(UITableViewCell.self, forCellReuseIdentifier: tableIdentifier)
         view.addSubview(browseTableView)
-
+        sleep(2)
+        print(git.urlList)
         git.fillRepositoryArray()
         print(git.repositoryArray)
         for i in git.repositoryArray {
@@ -36,6 +37,12 @@ class BrowseViewController: UIViewController {
             print(i.stargazers_count)
             print(i.updated_at)
         }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        browseTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        browseTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        browseTableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
     }
     
 }
