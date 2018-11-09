@@ -23,10 +23,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let SearchVC = SearchViewController()
         let FavoritesVC = FavoritesViewController()
         
-//        let BrowseNavigationControl = UINavigationController(rootViewController: BrowseVC)
-//        let SearchNavigationControl = UINavigationController(rootViewController: SearchVC)
-//        let FavoritesNavigationControl = UINavigationController(rootViewController: FavoritesVC)
-        
         let githubBrowserTabBarVC = UITabBarController()
         
         githubBrowserTabBarVC.setViewControllers([BrowseVC, SearchVC, FavoritesVC], animated: true)

@@ -9,37 +9,45 @@
 import UIKit
 
 class BrowseViewController: UIViewController {
-    var git = GetRepositoryURL()
+    var gitRepositoryList = GetRepositoryURL(controllerType: .browse, url: "https://api.github.com/repositories?since=364")
     var browseTableView = UITableView()
+    var loadIndicator = UIActivityIndicatorView()
     let tableIdentifier = "BrowseTableView"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if git.urlList.isEmpty {
-            git = GetRepositoryURL()
-        }
+
         self.navigationItem.title = "Browse Projects"
+        
         browseTableView.translatesAutoresizingMaskIntoConstraints = false
         browseTableView.delegate = self
         browseTableView.dataSource = self
-        browseTableView.register(UITableViewCell.self, forCellReuseIdentifier: tableIdentifier)
+        browseTableView.register(RepositoryTableViewCell.self, forCellReuseIdentifier: tableIdentifier)
+        browseTableView.separatorColor = .black
+
         view.addSubview(browseTableView)
-        sleep(2)
-        print(git.urlList)
-        git.fillRepositoryArray()
-        print(git.repositoryArray)
-        for i in git.repositoryArray {
-            print(i.description)
-            print(i.forks_count)
-            print(i.full_name)
-            print(i.language)
-            print(i.owner.avatar_url)
-            print(i.stargazers_count)
-            print(i.updated_at)
-        }
+        browseTableView.isHidden = true
+        
+        loadIndicator.center = view.center
+        loadIndicator.style = .whiteLarge
+        loadIndicator.color = .black
+        view.addSubview(loadIndicator)
+        loadIndicator.startAnimating()
+        
+        AddConstraints()
     }
     
-    override func viewDidLayoutSubviews() {
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        gitRepositoryList = GetRepositoryURL(controllerType: .browse, url: "https://api.github.com/repositories?since=364")
+        sleep(2)
+        browseTableView.reloadData()
+        loadIndicator.stopAnimating()
+        loadIndicator.isHidden = true
+        browseTableView.isHidden = false
+    }
+    
+    private func AddConstraints() {
         browseTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         browseTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         browseTableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
@@ -50,12 +58,21 @@ class BrowseViewController: UIViewController {
 extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return git.urlList.count
+        return gitRepositoryList.repositoryListArray.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = browseTableView.dequeueReusableCell(withIdentifier: tableIdentifier, for: indexPath)
-        let row = git.urlList[indexPath.row].url
-        cell.textLabel?.text = row
+        let cell = browseTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
+        cell.repositoryName = gitRepositoryList.repositoryListArray[indexPath.row].full_name
+        cell.addToFavoritesButton.tag = indexPath.row
+        cell.repositoryDescription = gitRepositoryList.repositoryListArray[indexPath.row].description
+        cell.avatarImage = gitRepositoryList.repositoryListArray[indexPath.row].owner.avatar_url
+        cell.stars = gitRepositoryList.repositoryListArray[indexPath.row].stargazers_count
+        cell.language = gitRepositoryList.repositoryListArray[indexPath.row].language
+        if var date = gitRepositoryList.repositoryListArray[indexPath.row].updated_at {
+            cell.updateDate = gitRepositoryList.getUpdateDate(stringData: &date)
+        }
+        cell.forks = gitRepositoryList.repositoryListArray[indexPath.row].forks_count
+        cell.layoutSubviews()
         return cell
     }
 }

@@ -8,13 +8,19 @@
 
 import Foundation
 
+enum ControllerType {
+    case browse
+    case search
+}
+
 struct RepositoryDetail: Decodable {
+    var html_url: String
     var full_name: String
     var description: String?
-    var updated_at: String
+    var updated_at: String?
     var language: String?
-    var stargazers_count: Int
-    var forks_count: Int
+    var stargazers_count: Int?
+    var forks_count: Int?
     var owner: Owner
     
     struct  Owner: Decodable {
@@ -24,60 +30,33 @@ struct RepositoryDetail: Decodable {
 }
 
 struct RepositorySearch: Decodable {
-    var items: [RepositoryUrl]
-}
-
-struct RepositoryUrl : Decodable {
-    var url: String
+    var items: [RepositoryDetail]
 }
 
 class GetRepositoryURL {
     
-    var urlList = [RepositoryUrl]()
-    var repositoryArray = [RepositoryDetail]()
+    var repositoryListArray = [RepositoryDetail]()
     
-    func fillRepositoryArray(){
-        for repo in urlList {
-            getRepositoryInfo(urlString: repo.url) { (repository) in
-                self.repositoryArray.append(repository)
-                //print(self.repositoryArray)
-            }
-            //sleep(1)
-        }
-        print(self.repositoryArray)
-    }
-    
-    func getRepositoryInfo(urlString: String, completion: @escaping (RepositoryDetail) -> Void) {
+    func getRepositoryArray(controllerType: ControllerType, urlString: String, completion: @escaping ([RepositoryDetail]) -> Void) {
         guard let url = URL(string: urlString) else {return}
-        var result = RepositoryDetail(full_name: "", description: "", updated_at: "", language: "", stargazers_count: 0, forks_count: 0, owner: RepositoryDetail.Owner(avatar_url: ""))
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
-            guard data != nil else {return}
-            guard error == nil else {return}
-            do {
-                result = try JSONDecoder().decode(RepositoryDetail.self, from: data!)
-                completion(result)
-            } catch let error {
-                print(error)
-            }
-            }.resume()
-    }
-    
-    func getURL(completion: @escaping ([RepositoryUrl]) -> Void) {
-        let urlString = "https://api.github.com/repositories?since=1000"
-        guard let url = URL(string: urlString) else {return}
-        var result = [RepositoryUrl]()
         URLSession.shared.dataTask(with: url) { (data, response, error) in
             guard data != nil else {
                 print("DATA is EMPTY!")
                 return
             }
             guard error == nil else {
-                print(error)
+                print(error!)
                 return
             }
             do {
-                result = try JSONDecoder().decode([RepositoryUrl].self, from: data!)
-                completion(result)
+                if controllerType == .browse {
+                    let result = try JSONDecoder().decode([RepositoryDetail].self, from: data!)
+                    completion(result)
+                } else if controllerType == .search {
+                    let result = try JSONDecoder().decode(RepositorySearch.self, from: data!)
+                    completion(result.items)
+                }
+
             } catch let error {
                 print(error)
             }
@@ -85,12 +64,47 @@ class GetRepositoryURL {
         
     }
     
-    init() {
-        getURL { (result) in
+    init(controllerType: ControllerType, url: String) {
+        getRepositoryArray(controllerType: controllerType, urlString: url) { (result) in
             for i in result.indices {
-                self.urlList.append(result[i])
+                self.repositoryListArray.append(result[i])
             }
         }
+    }
+    
+    init() {
+        self.repositoryListArray = [RepositoryDetail]()
+    }
+    
+    public func getUpdateDate(stringData: inout String) -> String {
+        var resultUpdatesAgo = "Updated "
+        
+        stringData.removeLast()
+        var temp = stringData.split(separator: "T")
+        stringData = temp[0]+" "+temp[1]
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        
+        let dataFromString = formatter.date(from: stringData)!
+        
+        var difference : (years:Int, days:Int, hours:Int)
+        
+        difference.years = Calendar.current.dateComponents([.year], from: dataFromString, to: Date()).year!
+        difference.days = Calendar.current.dateComponents([.day], from: dataFromString, to: Date()).day!
+        difference.hours = Calendar.current.dateComponents([.hour], from: dataFromString, to: Date()).hour!
+        
+        switch difference {
+        case (let year,_,_) where year == 1: resultUpdatesAgo += "a year ago"
+        case (let year,_,_) where year > 1: resultUpdatesAgo += "\(year) years ago"
+        case (_,let day,_) where day == 1: resultUpdatesAgo += "a day ago"
+        case (_,let day,_) where day > 1: resultUpdatesAgo += "\(day) days ago"
+        case (_,_,let hour) where hour == 1: resultUpdatesAgo += "an hour ago"
+        case (_,_,let hour) where hour > 1: resultUpdatesAgo += "\(hour) hours ago"
+        default:
+            resultUpdatesAgo = ""
+        }
+        
+        return resultUpdatesAgo
     }
     
     

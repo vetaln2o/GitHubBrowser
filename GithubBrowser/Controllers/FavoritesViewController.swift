@@ -11,19 +11,29 @@ import UIKit
 class FavoritesViewController: UIViewController {
     
     var favoritesTableView = UITableView()
+    var gitRepositoryList = GetRepositoryURL()
+    var favoritesListArray = [RepositoryDetail]()
+    let userDefaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         self.navigationItem.title = "Favorites"
-        view.translatesAutoresizingMaskIntoConstraints = false
+        favoritesTableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(favoritesTableView)
+        AddConstraints()
 
     }
     
-    override func viewDidLayoutSubviews() {
+    private func AddConstraints() {
         favoritesTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         favoritesTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         favoritesTableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
     }
+    
+//    private func loadFromUserDefaults() {
+//        if var favoritesRepo = userDefaults.object(forKey: "favoritesRepo") as? [String] {
+//            
+//        }
+//    }
 }
