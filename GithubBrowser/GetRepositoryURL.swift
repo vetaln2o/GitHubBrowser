@@ -72,6 +72,17 @@ class GetRepositoryURL {
         }
     }
     
+    func getArray(controllerType: ControllerType, url: String, closure: @escaping () -> ()) {
+        getRepositoryArray(controllerType: controllerType, urlString: url) { (result) in
+            for i in result.indices {
+                self.repositoryListArray.append(result[i])
+                if i == result.indices.max() {
+                    closure()
+                }
+            }
+        }
+    }
+    
     init() {
         self.repositoryListArray = [RepositoryDetail]()
     }

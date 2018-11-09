@@ -16,12 +16,15 @@ class BrowseViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        gitRepositoryList = GetRepositoryURL()
 
         self.navigationItem.title = "Browse Projects"
         
         browseTableView.translatesAutoresizingMaskIntoConstraints = false
         browseTableView.delegate = self
         browseTableView.dataSource = self
+        browseTableView.rowHeight = UITableView.automaticDimension
+        browseTableView.estimatedRowHeight = 44
         browseTableView.register(RepositoryTableViewCell.self, forCellReuseIdentifier: tableIdentifier)
         browseTableView.separatorColor = .black
 
@@ -32,19 +35,21 @@ class BrowseViewController: UIViewController {
         loadIndicator.style = .whiteLarge
         loadIndicator.color = .black
         view.addSubview(loadIndicator)
-        loadIndicator.startAnimating()
         
         AddConstraints()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        gitRepositoryList = GetRepositoryURL(controllerType: .browse, url: "https://api.github.com/repositories?since=364")
-        sleep(2)
-        browseTableView.reloadData()
-        loadIndicator.stopAnimating()
-        loadIndicator.isHidden = true
-        browseTableView.isHidden = false
+        loadIndicator.startAnimating()
+        gitRepositoryList.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=364", closure: { [weak self] in
+            DispatchQueue.main.async {
+                self?.browseTableView.reloadData()
+                self?.loadIndicator.stopAnimating()
+                self?.loadIndicator.isHidden = true
+                self?.browseTableView.isHidden = false
+            }
+        })
     }
     
     private func AddConstraints() {
@@ -72,7 +77,7 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
             cell.updateDate = gitRepositoryList.getUpdateDate(stringData: &date)
         }
         cell.forks = gitRepositoryList.repositoryListArray[indexPath.row].forks_count
-        cell.layoutSubviews()
+//        cell.layoutSubviews()
         return cell
     }
 }
