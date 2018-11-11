@@ -23,9 +23,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let SearchVC = SearchViewController()
         let FavoritesVC = FavoritesViewController()
         
+        let browseNavigationVC = UINavigationController(rootViewController: BrowseVC)
+        let searchNavigationVC = UINavigationController(rootViewController: SearchVC)
+        let favoritesNavigationVC = UINavigationController(rootViewController: FavoritesVC)
+        
         let githubBrowserTabBarVC = UITabBarController()
         
-        githubBrowserTabBarVC.setViewControllers([BrowseVC, SearchVC, FavoritesVC], animated: true)
+        githubBrowserTabBarVC.setViewControllers([browseNavigationVC, searchNavigationVC, favoritesNavigationVC], animated: true)
         
         var tabBarItem = UITabBarItem()
         tabBarItem = UITabBarItem(tabBarSystemItem: .recents, tag: 1)

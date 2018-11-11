@@ -8,12 +8,8 @@
 
 import Foundation
 
-enum ControllerType {
-    case browse
-    case search
-}
-
-struct RepositoryDetail: Decodable {
+struct RepositoryDetail: Codable {
+    var id: Int
     var html_url: String
     var full_name: String
     var description: String?
@@ -23,19 +19,46 @@ struct RepositoryDetail: Decodable {
     var forks_count: Int?
     var owner: Owner
     
-    struct  Owner: Decodable {
+    struct  Owner: Codable {
         var avatar_url: String
+        var avatarImg: Data?
+        
+        private enum CodingKeys: String, CodingKey {
+            case avatar_url
+            case avatarImg
+        }
     }
     
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case html_url
+        case full_name
+        case description
+        case updated_at
+        case language
+        case stargazers_count
+        case forks_count
+        case owner
+    }
+    
+}
+
+enum ControllerType {
+    case browse
+    case search
 }
 
 struct RepositorySearch: Decodable {
     var items: [RepositoryDetail]
 }
 
-class GetRepositoryURL {
+class GetRepositoryInfo {
     
     var repositoryListArray = [RepositoryDetail]()
+    
+    init() {
+        self.repositoryListArray = [RepositoryDetail]()
+    }
     
     func getRepositoryArray(controllerType: ControllerType, urlString: String, completion: @escaping ([RepositoryDetail]) -> Void) {
         guard let url = URL(string: urlString) else {return}
@@ -49,10 +72,12 @@ class GetRepositoryURL {
                 return
             }
             do {
+                //for BrowseViewController
                 if controllerType == .browse {
                     let result = try JSONDecoder().decode([RepositoryDetail].self, from: data!)
                     completion(result)
                 } else if controllerType == .search {
+                    //For Search View Controller
                     let result = try JSONDecoder().decode(RepositorySearch.self, from: data!)
                     completion(result.items)
                 }
@@ -63,16 +88,10 @@ class GetRepositoryURL {
             }.resume()
         
     }
-    
-    init(controllerType: ControllerType, url: String) {
-        getRepositoryArray(controllerType: controllerType, urlString: url) { (result) in
-            for i in result.indices {
-                self.repositoryListArray.append(result[i])
-            }
-        }
-    }
-    
+
+    //Completion of adding data, which receiver from JSON to Array of RepoDetail
     func getArray(controllerType: ControllerType, url: String, closure: @escaping () -> ()) {
+        repositoryListArray = [RepositoryDetail]()
         getRepositoryArray(controllerType: controllerType, urlString: url) { (result) in
             for i in result.indices {
                 self.repositoryListArray.append(result[i])
@@ -83,11 +102,17 @@ class GetRepositoryURL {
         }
     }
     
-    init() {
-        self.repositoryListArray = [RepositoryDetail]()
+    //Get images from server and convert to Data format (added to current Array of Repositories)
+    func makeImgFromUrl() {
+        for index in self.repositoryListArray.indices {
+            let imageUrl = URL(string: self.repositoryListArray[index].owner.avatar_url)
+            let imageData = try! Data(contentsOf: imageUrl!)
+            self.repositoryListArray[index].owner.avatarImg = imageData
+        }
     }
     
-    public func getUpdateDate(stringData: inout String) -> String {
+    //Func to change data from GitHub API Format to W/S format (Updated _ days/hours ago)
+    static func getUpdateDate(stringData: inout String) -> String {
         var resultUpdatesAgo = "Updated "
         
         stringData.removeLast()
@@ -114,10 +139,8 @@ class GetRepositoryURL {
         default:
             resultUpdatesAgo = ""
         }
-        
         return resultUpdatesAgo
     }
-    
-    
+
 }
 

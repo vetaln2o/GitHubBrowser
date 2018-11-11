@@ -12,13 +12,7 @@ class RepositoryTableViewCell: UITableViewCell {
     
     let userDefaults = UserDefaults.standard
     
-    var repositoryName = ""
-    var repositoryDescription: String?
-    var avatarImage: String?
-    var stars: Int?
-    var language: String?
-    var updateDate: String?
-    var forks: Int?
+    var repositoryToCell: RepositoryDetail?
     
     var addToFavoritesButton = UIButton(type: UIButton.ButtonType.contactAdd)
     var repositoryNameLable = UILabel()
@@ -28,15 +22,11 @@ class RepositoryTableViewCell: UITableViewCell {
     var languageLabel = UILabel()
     var updateDataLabel = UILabel()
     var forksLabel = UILabel()
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Initialization code
-    }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
+        //MARK - Custom Visual Settings for Cell
         addToFavoritesButton.translatesAutoresizingMaskIntoConstraints = false
         addToFavoritesButton.backgroundColor = .white
         
@@ -81,42 +71,27 @@ class RepositoryTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        repositoryNameLable.text = repositoryName
-        
-        if let description = repositoryDescription {
-            repositoryDescriptionTextView.text = description
+        //Get Date from Repositories an put to Table Cell
+        if let currentRep = repositoryToCell {
+            repositoryNameLable.text = currentRep.full_name
+            repositoryDescriptionTextView.text = currentRep.description
+            if let star = currentRep.stargazers_count {
+                starsLabel.text = "★ " + String(star)
+            }
+            if let lang = currentRep.language {
+                languageLabel.text = "● " + lang + " | "
+            }
+            if var date = currentRep.updated_at {
+                updateDataLabel.text = GetRepositoryInfo.getUpdateDate(stringData: &date) //Convert Update Date to w/s format
+            }
+            if let fork = currentRep.forks_count {
+                forksLabel.text = "\(fork) forks"
+            }
+            if let img = currentRep.owner.avatarImg {
+                let avatarImg = UIImage(data: img)
+                avatarImageView.image = avatarImg
+            }
         }
-        
-        if let imagPath = avatarImage {
-            let imageUrl = URL(string: imagPath)
-            let imageData = try! Data(contentsOf: imageUrl!)
-            let avatarImg = UIImage(data: imageData)
-            avatarImageView.image = avatarImg
-        }
-        
-        if let star = stars {
-            starsLabel.text = "★ " + String(star)
-        }
-        
-        if let lang = language {
-            languageLabel.text = "● " + lang + " | "
-        }
-        
-        if let date = updateDate {
-            updateDataLabel.text = date
-        }
-        
-        if forks != nil && forks != 0 {
-            forksLabel.text = "\(forks!) forks"
-        }
-        
-    }
-    
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
     }
     
     private func addCounstraints() {
@@ -160,28 +135,26 @@ class RepositoryTableViewCell: UITableViewCell {
         self.heightAnchor.constraint(equalTo: repositoryDescriptionTextView.heightAnchor, constant: 85).isActive = true
     }
     
+    //Save selected Repository to UserDefaults (key: favoritesRepo) for Favorites Tab
     @objc func addToFavoritesAction(from button: UIButton) {
-//        var selectedRepositoryDetail: RepositoryDetail
-//        selectedRepositoryDetail.description = repositoryDescription
-//        selectedRepositoryDetail.full_name = repositoryName
-//        selectedRepositoryDetail.owner.avatar_url = avatarImage
-//        
-//        
-//        var stars: Int?
-//        var language: String?
-//        var updateDate: String?
-//        var forks: Int?
-        
-        var selectedRepository = [String]()
-        selectedRepository.append(repositoryNameLable.text!)
-        if var favoritesRepo = userDefaults.object(forKey: "favoritesRepo") as? [String] {
-            favoritesRepo += selectedRepository
-            userDefaults.removeObject(forKey: "favoritesRepo")
-            userDefaults.set(favoritesRepo, forKey: "favoritesRepo")
-            print("ADDED")
+        var isInFavorites = false
+        var selectedRepository = [RepositoryDetail]()
+        selectedRepository.append(repositoryToCell!)
+        if let data = userDefaults.object(forKey: "favoritesRepo") as? Data {
+            if var favoritesRepo = try? PropertyListDecoder().decode([RepositoryDetail].self, from: data) {
+                for repo in favoritesRepo {
+                    if selectedRepository[0].full_name == repo.full_name {
+                        isInFavorites = true
+                    }
+                }
+                if !isInFavorites {
+                    favoritesRepo += selectedRepository
+                    userDefaults.removeObject(forKey: "favoritesRepo")
+                    userDefaults.setValue(try? PropertyListEncoder().encode(favoritesRepo), forKey: "favoritesRepo")
+                }
+            }
         } else {
-            userDefaults.set(selectedRepository, forKey: "favoritesRepo")
-            print("New defaults")
+            userDefaults.set(try? PropertyListEncoder().encode(selectedRepository), forKey: "favoritesRepo")
         }
     }
 
