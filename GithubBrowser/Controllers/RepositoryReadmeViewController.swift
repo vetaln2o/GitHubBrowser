@@ -21,11 +21,11 @@ class RepositoryReadmeViewController: UIViewController, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.title = repositoryDetail?.full_name
+        self.title = repositoryDetail?.fullName
 
         readmeWebView.translatesAutoresizingMaskIntoConstraints = false
         readmeWebView.navigationDelegate = self
-        if let url = URL(string: "https://github.com/\(repositoryDetail!.full_name)/blob/master/README.md") {
+        if let url = URL(string: "https://github.com/\(repositoryDetail!.fullName)/blob/master/README.md") {
             let urlRequest = URLRequest(url: url)
             readmeWebView.load(urlRequest)
         }
@@ -47,7 +47,7 @@ class RepositoryReadmeViewController: UIViewController, WKNavigationDelegate {
         if let data = userDefaults.object(forKey: "favoritesRepo") as? Data {
             if var favoritesRepo = try? PropertyListDecoder().decode([RepositoryDetail].self, from: data) {
                 for repo in favoritesRepo {
-                    if selectedRepository[0].full_name == repo.full_name {
+                    if selectedRepository[0].fullName == repo.fullName {
                         isInFavorites = true
                     }
                 }
@@ -60,7 +60,7 @@ class RepositoryReadmeViewController: UIViewController, WKNavigationDelegate {
         } else {
             userDefaults.set(try? PropertyListEncoder().encode(selectedRepository), forKey: "favoritesRepo")
         }
-        let alert = UIAlertController(title: "Favorites", message: "Repository \(repositoryDetail!.full_name) added to Favorites!", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Favorites", message: "Repository \(repositoryDetail!.fullName) added to Favorites!", preferredStyle: .actionSheet)
         let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
         alert.addAction(alertAction)
         self.present(alert, animated: true, completion: nil)
@@ -68,12 +68,12 @@ class RepositoryReadmeViewController: UIViewController, WKNavigationDelegate {
     
     
     @objc func openInSafari() {
-        UIApplication.shared.open(URL(string: repositoryDetail!.html_url)!, options: [:], completionHandler: nil)
+        UIApplication.shared.open(URL(string: repositoryDetail!.htmlUrl)!, options: [:], completionHandler: nil)
     }
 
     private func AddConstraints() {
         readmeWebView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        readmeWebView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        readmeWebView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
         readmeWebView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
     }
     

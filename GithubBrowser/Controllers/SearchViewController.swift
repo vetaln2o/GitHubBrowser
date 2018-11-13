@@ -15,11 +15,10 @@ class SearchViewController: UIViewController {
     var loadIndicator = UIActivityIndicatorView()
     var footerView = UIView()
     var tableLoadIndicator = UIActivityIndicatorView()
-    var swipeGesture = UISwipeGestureRecognizer()
     
     var gitRepositoryList = GetRepositoryInfo()
     let tableIdentifier = "SearchTableView"
-    var lastRepositoryID = 1
+    var lastRepositoryId = 1
     var loadMoreStatus = false
 
     override func viewDidLoad() {
@@ -42,31 +41,45 @@ class SearchViewController: UIViewController {
         contenTableView.delegate = self
         contenTableView.dataSource = self
         searchProjectBar.delegate = self
+        searchProjectBar.becomeFirstResponder()
         
         loadIndicator.center = view.center
         loadIndicator.style = .whiteLarge
         loadIndicator.color = .black
         
-        AddConstraints()
-        lastRepositoryID = 1
+        addConstraints()
         
-        swipeGesture = UISwipeGestureRecognizer(target: self.contenTableView, action: #selector(performSwipeGesture))
-        contenTableView.addGestureRecognizer(swipeGesture)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(param:)), name:UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(param:)), name:UIResponder.keyboardWillHideNotification, object: nil)
+
     }
     
-    @objc private func performSwipeGesture() {
-        searchProjectBar.resignFirstResponder()
+    @objc private func keyboardWillShow(param: Notification) {
+        print("keyboardWillShow")
+        let userInfo = param.userInfo
+        let getKeyboardRect = (userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        let frameKeyboard = self.view.convert(getKeyboardRect, to: view.window)
+        var contentInset  = contenTableView.contentInset
+        contentInset.bottom = frameKeyboard.height
+        contenTableView.contentInset = contentInset
     }
     
-    private func AddConstraints() {
+    @objc private func keyboardWillHide(param: Notification) {
+        let contentInset = UIEdgeInsets.zero
+        contenTableView.contentInset = contentInset
+    }
+
+    
+    private func addConstraints() {
 
         searchProjectBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        searchProjectBar.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        searchProjectBar.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
         searchProjectBar.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         
         contenTableView.topAnchor.constraint(equalTo: searchProjectBar.bottomAnchor).isActive = true
+        contenTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
         contenTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        contenTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        contenTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
     }
 }
 
@@ -79,6 +92,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = contenTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
         cell.repositoryToCell = gitRepositoryList.repositoryListArray[indexPath.row]
+        cell.searchWordSignal = searchProjectBar.text
         return cell
     }
     
@@ -93,12 +107,14 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        searchProjectBar.resignFirstResponder()
         let readmeVC = RepositoryReadmeViewController()
         readmeVC.repositoryDetail = gitRepositoryList.repositoryListArray[indexPath.row]
         self.navigationController?.pushViewController(readmeVC, animated: true)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        searchProjectBar.resignFirstResponder()
         let currentOffset = scrollView.contentOffset.y
         let maximumOffset = scrollView.contentSize.height - scrollView.frame.size.height
         let deltaOffset = maximumOffset - currentOffset
@@ -114,18 +130,16 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     func loadTableAfterScroll(){
         self.loadMoreStatus = true
-        lastRepositoryID += 1
+        lastRepositoryId += 1
         let newArray = GetRepositoryInfo()
-        print("Start reload")
-        newArray.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchProjectBar.text!)&page=\(lastRepositoryID)&per_page=100", closure: { [weak self] in
+        newArray.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchProjectBar.text!)&page=\(lastRepositoryId)&per_page=100", closure: { [weak self] in
             DispatchQueue.main.async {
-                self?.gitRepositoryList.makeImgFromUrl()
+                newArray.makeImgFromUrl()
                 self?.gitRepositoryList.repositoryListArray += newArray.repositoryListArray
                 self?.contenTableView.reloadData()
                 self?.tableLoadIndicator.stopAnimating()
                 self?.footerView.isHidden = true
                 self?.loadMoreStatus = false
-                print("Finish reload")
             }
         })
     }
@@ -135,10 +149,6 @@ extension SearchViewController: UISearchBarDelegate {
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         searchBar.becomeFirstResponder()
-    }
-    
-    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {

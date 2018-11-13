@@ -17,7 +17,7 @@ class BrowseViewController: UIViewController {
     
     var gitRepositoryList = GetRepositoryInfo()
     let tableIdentifier = "BrowseTableView"
-    var lastRepositoryID = 1 //ID of last Repository in list
+    var lastRepositoryId = 1 //ID of last Repository in list
     var loadMoreStatus = false //For check if loading after scroll to the table end running
     var isLoadedRepository = false //For check if Repository list was loaded when BrowseTab is opened
     
@@ -43,7 +43,7 @@ class BrowseViewController: UIViewController {
         loadIndicator.color = .black
         view.addSubview(loadIndicator)
         
-        AddConstraints()
+        addConstraints()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -63,10 +63,11 @@ class BrowseViewController: UIViewController {
         }
     }
     
-    private func AddConstraints() {
-        browseTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        browseTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        browseTableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+    private func addConstraints() {
+        browseTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
+        browseTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        browseTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+        browseTableView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor).isActive = true
     }
     
 }
@@ -119,17 +120,16 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
             if (!gitRepositoryList.repositoryListArray.isEmpty) {
                 self.loadMoreStatus = true
                 let count = gitRepositoryList.repositoryListArray.count
-                lastRepositoryID = gitRepositoryList.repositoryListArray[count-1].id
+                lastRepositoryId = gitRepositoryList.repositoryListArray[count-1].id
                 let newArray = GetRepositoryInfo()
-                print("Start reload")
-                newArray.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=\(lastRepositoryID)&per_page=100", closure: { [weak self] in
+                newArray.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=\(lastRepositoryId)&per_page=100", closure: { [weak self] in
                     DispatchQueue.main.async {
+                        newArray.makeImgFromUrl()
                         self?.gitRepositoryList.repositoryListArray += newArray.repositoryListArray
                         self?.browseTableView.reloadData()
                         self?.tableLoadIndicator.stopAnimating()
                         self?.footerView.isHidden = true
                         self?.loadMoreStatus = false
-                        print("Finish reload")
                     }
                 })
             }

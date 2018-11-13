@@ -19,25 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.window?.backgroundColor = UIColor.white
         
-        let BrowseVC = BrowseViewController()
-        let SearchVC = SearchViewController()
-        let FavoritesVC = FavoritesViewController()
-        
-        let browseNavigationVC = UINavigationController(rootViewController: BrowseVC)
-        let searchNavigationVC = UINavigationController(rootViewController: SearchVC)
-        let favoritesNavigationVC = UINavigationController(rootViewController: FavoritesVC)
-        
-        let githubBrowserTabBarVC = UITabBarController()
-        
-        githubBrowserTabBarVC.setViewControllers([browseNavigationVC, searchNavigationVC, favoritesNavigationVC], animated: true)
-        
-        var tabBarItem = UITabBarItem()
-        tabBarItem = UITabBarItem(tabBarSystemItem: .recents, tag: 1)
-        BrowseVC.tabBarItem = tabBarItem
-        tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 2)
-        SearchVC.tabBarItem = tabBarItem
-        tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 3)
-        FavoritesVC.tabBarItem = tabBarItem
+        let githubBrowserTabBarVC = MainTabBarController()
         
         self.window?.rootViewController = githubBrowserTabBarVC
         self.window?.makeKeyAndVisible()

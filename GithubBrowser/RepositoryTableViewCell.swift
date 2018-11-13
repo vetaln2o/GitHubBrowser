@@ -13,6 +13,7 @@ class RepositoryTableViewCell: UITableViewCell {
     let userDefaults = UserDefaults.standard
     
     var repositoryToCell: RepositoryDetail?
+    var searchWordSignal: String?
     
     var addToFavoritesButton = UIButton(type: UIButton.ButtonType.contactAdd)
     var repositoryNameLable = UILabel()
@@ -73,18 +74,24 @@ class RepositoryTableViewCell: UITableViewCell {
         
         //Get Date from Repositories an put to Table Cell
         if let currentRep = repositoryToCell {
-            repositoryNameLable.text = currentRep.full_name
-            repositoryDescriptionTextView.text = currentRep.description
-            if let star = currentRep.stargazers_count {
+            if searchWordSignal == nil {
+                repositoryNameLable.text = currentRep.fullName
+                repositoryDescriptionTextView.text = currentRep.description
+            } else {
+                repositoryNameLable.attributedText = highlight(inputText: currentRep.fullName)
+                repositoryDescriptionTextView.attributedText = highlight(inputText: currentRep.description ?? "")
+            }
+            
+            if let star = currentRep.stargazersCount {
                 starsLabel.text = "★ " + String(star)
             }
             if let lang = currentRep.language {
                 languageLabel.text = "● " + lang + " | "
             }
-            if var date = currentRep.updated_at {
+            if var date = currentRep.updatedAt {
                 updateDataLabel.text = GetRepositoryInfo.getUpdateDate(stringData: &date) //Convert Update Date to w/s format
             }
-            if let fork = currentRep.forks_count {
+            if let fork = currentRep.forksCount {
                 forksLabel.text = "\(fork) forks"
             }
             if let img = currentRep.owner.avatarImg {
@@ -92,6 +99,27 @@ class RepositoryTableViewCell: UITableViewCell {
                 avatarImageView.image = avatarImg
             }
         }
+    }
+    
+    func highlight(inputText: String) -> NSMutableAttributedString {
+        let col = UIColor.red
+        var ranges = [Int]()
+        let attrString = NSMutableAttributedString(string: inputText)
+        
+        let str = searchWordSignal!
+        var range = (inputText.localizedLowercase as NSString).range(of: str.localizedLowercase)
+        
+        while (range.location != NSNotFound && ranges.index(of: range.location) != nil) {
+            let subRange = NSMakeRange(range.location + 1, inputText.count - range.location - 1)
+            range = (inputText as NSString).range(of: str, options: NSString.CompareOptions.literal, range: subRange)
+        }
+        
+        if range.location != NSNotFound {
+            ranges.append(range.location)
+            attrString.addAttribute(NSAttributedString.Key.foregroundColor, value: col, range: range)
+        }
+        
+        return attrString
     }
     
     private func addCounstraints() {
@@ -143,7 +171,7 @@ class RepositoryTableViewCell: UITableViewCell {
         if let data = userDefaults.object(forKey: "favoritesRepo") as? Data {
             if var favoritesRepo = try? PropertyListDecoder().decode([RepositoryDetail].self, from: data) {
                 for repo in favoritesRepo {
-                    if selectedRepository[0].full_name == repo.full_name {
+                    if selectedRepository[0].fullName == repo.fullName {
                         isInFavorites = true
                     }
                 }

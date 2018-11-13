@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		913C91B7219A06C8000E005A /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913C91B6219A06C8000E005A /* MainTabBarController.swift */; };
 		916D6D22218CEDA000A05B9E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916D6D21218CEDA000A05B9E /* AppDelegate.swift */; };
 		916D6D24218CEDA000A05B9E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916D6D23218CEDA000A05B9E /* ViewController.swift */; };
 		916D6D27218CEDA000A05B9E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 916D6D25218CEDA000A05B9E /* Main.storyboard */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		913C91B6219A06C8000E005A /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
 		916D6D1E218CEDA000A05B9E /* GithubBrowser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GithubBrowser.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		916D6D21218CEDA000A05B9E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		916D6D23218CEDA000A05B9E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 		916D6D39218CEE1100A05B9E /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				913C91B6219A06C8000E005A /* MainTabBarController.swift */,
 				916D6D33218CEDCA00A05B9E /* BrowseViewController.swift */,
 				916D6D35218CEDF100A05B9E /* SearchViewController.swift */,
 				916D6D37218CEE0700A05B9E /* FavoritesViewController.swift */,
@@ -163,6 +166,7 @@
 			files = (
 				916D6D34218CEDCA00A05B9E /* BrowseViewController.swift in Sources */,
 				916D6D3F218CFCBA00A05B9E /* GetRepositoryInfo.swift in Sources */,
+				913C91B7219A06C8000E005A /* MainTabBarController.swift in Sources */,
 				9178CEA721947FCB00C32924 /* RepositoryTableViewCell.swift in Sources */,
 				916D6D24218CEDA000A05B9E /* ViewController.swift in Sources */,
 				916D6D36218CEDF100A05B9E /* SearchViewController.swift in Sources */,

@@ -32,7 +32,7 @@ class FavoritesViewController: UIViewController {
         favoritesTableView.separatorColor = .black
         view.addSubview(favoritesTableView)
         
-        AddConstraints()
+        addConstraints()
         
         editButton = UIButton(type: UIButton.ButtonType.roundedRect)
         editButton.setTitle("Edit", for: .normal)
@@ -60,10 +60,11 @@ class FavoritesViewController: UIViewController {
         }
     }
     
-    private func AddConstraints() {
-        favoritesTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        favoritesTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        favoritesTableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+    private func addConstraints() {
+        favoritesTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
+        favoritesTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        favoritesTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+        favoritesTableView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor).isActive = true
     }
     
 }

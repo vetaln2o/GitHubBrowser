@@ -10,34 +10,34 @@ import Foundation
 
 struct RepositoryDetail: Codable {
     var id: Int
-    var html_url: String
-    var full_name: String
+    var htmlUrl: String
+    var fullName: String
     var description: String?
-    var updated_at: String?
+    var updatedAt: String?
     var language: String?
-    var stargazers_count: Int?
-    var forks_count: Int?
+    var stargazersCount: Int?
+    var forksCount: Int?
     var owner: Owner
     
     struct  Owner: Codable {
-        var avatar_url: String
+        var avatarUrl: String
         var avatarImg: Data?
         
         private enum CodingKeys: String, CodingKey {
-            case avatar_url
+            case avatarUrl = "avatar_url"
             case avatarImg
         }
     }
     
     private enum CodingKeys: String, CodingKey {
         case id
-        case html_url
-        case full_name
+        case htmlUrl = "html_url"
+        case fullName = "full_name"
         case description
-        case updated_at
+        case updatedAt = "updated_at"
         case language
-        case stargazers_count
-        case forks_count
+        case stargazersCount = "stargazers_count"
+        case forksCount = "forks_count"
         case owner
     }
     
@@ -105,9 +105,12 @@ class GetRepositoryInfo {
     //Get images from server and convert to Data format (added to current Array of Repositories)
     func makeImgFromUrl() {
         for index in self.repositoryListArray.indices {
-            let imageUrl = URL(string: self.repositoryListArray[index].owner.avatar_url)
-            let imageData = try! Data(contentsOf: imageUrl!)
-            self.repositoryListArray[index].owner.avatarImg = imageData
+            DispatchQueue.global().async {
+                let imageUrl = URL(string: self.repositoryListArray[index].owner.avatarUrl)
+                let imageData = try! Data(contentsOf: imageUrl!)
+                self.repositoryListArray[index].owner.avatarImg = imageData
+
+            }
         }
     }
     
