@@ -94,10 +94,10 @@ class RepositoryTableViewCell: UITableViewCell {
             if let fork = currentRep.forksCount {
                 forksLabel.text = "\(fork) forks"
             }
-            if let img = currentRep.owner.avatarImg {
-                let avatarImg = UIImage(data: img)
-                avatarImageView.image = avatarImg
-            }
+//            if let img = currentRep.owner.avatarImg {
+//                let avatarImg = UIImage(data: img)
+//                avatarImageView.image = avatarImg
+//            }
         }
     }
     

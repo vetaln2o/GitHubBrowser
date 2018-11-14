@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 struct RepositoryDetail: Codable {
     var id: Int
@@ -103,15 +104,27 @@ class GetRepositoryInfo {
     }
     
     //Get images from server and convert to Data format (added to current Array of Repositories)
-    func makeImgFromUrl() {
-        for index in self.repositoryListArray.indices {
-            DispatchQueue.global().async {
-                let imageUrl = URL(string: self.repositoryListArray[index].owner.avatarUrl)
-                let imageData = try! Data(contentsOf: imageUrl!)
-                self.repositoryListArray[index].owner.avatarImg = imageData
-
-            }
-        }
+//    func makeImgFromUrl() {
+//        for index in self.repositoryListArray.indices {
+//            DispatchQueue.global().async {
+//                let imageUrl = URL(string: self.repositoryListArray[index].owner.avatarUrl)
+//                let imageData = try! Data(contentsOf: imageUrl!)
+//                self.repositoryListArray[index].owner.avatarImg = imageData
+//
+//            }
+//        }
+//    }
+    
+    func imageFromServerURL(urlString: String, closure: @escaping (UIImage) -> ()) {
+        URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
+            DispatchQueue.main.async(execute: {
+                if let data = data {
+                    let image = UIImage(data: data)
+                    closure(image ?? UIImage())
+                }
+            })
+            
+        }).resume()
     }
     
     //Func to change data from GitHub API Format to W/S format (Updated _ days/hours ago)

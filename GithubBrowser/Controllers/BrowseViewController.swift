@@ -53,7 +53,7 @@ class BrowseViewController: UIViewController {
             loadIndicator.startAnimating()
             gitRepositoryList.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=1&per_page=100", closure: { [weak self] in
                 DispatchQueue.main.async {
-                    self?.gitRepositoryList.makeImgFromUrl()
+//                    self?.gitRepositoryList.makeImgFromUrl()
                     self?.browseTableView.reloadData()
                     self?.loadIndicator.stopAnimating()
                     self?.loadIndicator.isHidden = true
@@ -80,7 +80,11 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = browseTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
-        cell.repositoryToCell = gitRepositoryList.repositoryListArray[indexPath.row]
+        let repository = gitRepositoryList.repositoryListArray[indexPath.row]
+        cell.repositoryToCell = repository
+        gitRepositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, closure: { image in
+            cell.avatarImageView.image = image
+        })
         return cell
     }
     
@@ -124,7 +128,7 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
                 let newArray = GetRepositoryInfo()
                 newArray.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=\(lastRepositoryId)&per_page=100", closure: { [weak self] in
                     DispatchQueue.main.async {
-                        newArray.makeImgFromUrl()
+//                        newArray.makeImgFromUrl()
                         self?.gitRepositoryList.repositoryListArray += newArray.repositoryListArray
                         self?.browseTableView.reloadData()
                         self?.tableLoadIndicator.stopAnimating()
