@@ -1,0 +1,139 @@
+diff --git a/GithubBrowser/Controllers/BrowseViewController.swift b/GithubBrowser/Controllers/BrowseViewController.swift
+index 928b91d..9ae0af2 100644
+--- a/GithubBrowser/Controllers/BrowseViewController.swift
++++ b/GithubBrowser/Controllers/BrowseViewController.swift
+@@ -53,7 +53,7 @@ class BrowseViewController: UIViewController {
+             loadIndicator.startAnimating()
+             gitRepositoryList.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=1&per_page=100", closure: { [weak self] in
+                 DispatchQueue.main.async {
+-                    self?.gitRepositoryList.makeImgFromUrl()
++//                    self?.gitRepositoryList.makeImgFromUrl()
+                     self?.browseTableView.reloadData()
+                     self?.loadIndicator.stopAnimating()
+                     self?.loadIndicator.isHidden = true
+@@ -80,7 +80,11 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
+     
+     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+         let cell = browseTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
+-        cell.repositoryToCell = gitRepositoryList.repositoryListArray[indexPath.row]
++        let repository = gitRepositoryList.repositoryListArray[indexPath.row]
++        cell.repositoryToCell = repository
++        gitRepositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, closure: { image in
++            cell.avatarImageView.image = image
++        })
+         return cell
+     }
+     
+@@ -124,7 +128,7 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
+                 let newArray = GetRepositoryInfo()
+                 newArray.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=\(lastRepositoryId)&per_page=100", closure: { [weak self] in
+                     DispatchQueue.main.async {
+-                        newArray.makeImgFromUrl()
++//                        newArray.makeImgFromUrl()
+                         self?.gitRepositoryList.repositoryListArray += newArray.repositoryListArray
+                         self?.browseTableView.reloadData()
+                         self?.tableLoadIndicator.stopAnimating()
+diff --git a/GithubBrowser/Controllers/SearchViewController.swift b/GithubBrowser/Controllers/SearchViewController.swift
+index 264c426..3a8aa56 100644
+--- a/GithubBrowser/Controllers/SearchViewController.swift
++++ b/GithubBrowser/Controllers/SearchViewController.swift
+@@ -91,8 +91,12 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
+     
+     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+         let cell = contenTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
+-        cell.repositoryToCell = gitRepositoryList.repositoryListArray[indexPath.row]
++        let repository = gitRepositoryList.repositoryListArray[indexPath.row]
++        cell.repositoryToCell = repository
+         cell.searchWordSignal = searchProjectBar.text
++        gitRepositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, closure: { image in
++            cell.avatarImageView.image = image
++        })
+         return cell
+     }
+     
+@@ -134,7 +138,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
+         let newArray = GetRepositoryInfo()
+         newArray.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchProjectBar.text!)&page=\(lastRepositoryId)&per_page=100", closure: { [weak self] in
+             DispatchQueue.main.async {
+-                newArray.makeImgFromUrl()
++//                newArray.makeImgFromUrl()
+                 self?.gitRepositoryList.repositoryListArray += newArray.repositoryListArray
+                 self?.contenTableView.reloadData()
+                 self?.tableLoadIndicator.stopAnimating()
+@@ -163,7 +167,7 @@ extension SearchViewController: UISearchBarDelegate {
+             gitRepositoryList = GetRepositoryInfo()
+             gitRepositoryList.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchText)&per_page=100", closure: { [weak self] in
+                 DispatchQueue.main.async {
+-                    self?.gitRepositoryList.makeImgFromUrl()
++//                    self?.gitRepositoryList.makeImgFromUrl()
+                     self?.contenTableView.reloadData()
+                     self?.loadIndicator.stopAnimating()
+                     self?.loadIndicator.isHidden = true
+diff --git a/GithubBrowser/GetRepositoryInfo.swift b/GithubBrowser/GetRepositoryInfo.swift
+index 868eccb..03b9e87 100644
+--- a/GithubBrowser/GetRepositoryInfo.swift
++++ b/GithubBrowser/GetRepositoryInfo.swift
+@@ -7,6 +7,7 @@
+ //
+ 
+ import Foundation
++import UIKit
+ 
+ struct RepositoryDetail: Codable {
+     var id: Int
+@@ -103,15 +104,27 @@ class GetRepositoryInfo {
+     }
+     
+     //Get images from server and convert to Data format (added to current Array of Repositories)
+-    func makeImgFromUrl() {
+-        for index in self.repositoryListArray.indices {
+-            DispatchQueue.global().async {
+-                let imageUrl = URL(string: self.repositoryListArray[index].owner.avatarUrl)
+-                let imageData = try! Data(contentsOf: imageUrl!)
+-                self.repositoryListArray[index].owner.avatarImg = imageData
+-
+-            }
+-        }
++//    func makeImgFromUrl() {
++//        for index in self.repositoryListArray.indices {
++//            DispatchQueue.global().async {
++//                let imageUrl = URL(string: self.repositoryListArray[index].owner.avatarUrl)
++//                let imageData = try! Data(contentsOf: imageUrl!)
++//                self.repositoryListArray[index].owner.avatarImg = imageData
++//
++//            }
++//        }
++//    }
++    
++    func imageFromServerURL(urlString: String, closure: @escaping (UIImage) -> ()) {
++        URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
++            DispatchQueue.main.async(execute: {
++                if let data = data {
++                    let image = UIImage(data: data)
++                    closure(image ?? UIImage())
++                }
++            })
++            
++        }).resume()
+     }
+     
+     //Func to change data from GitHub API Format to W/S format (Updated _ days/hours ago)
+diff --git a/GithubBrowser/RepositoryTableViewCell.swift b/GithubBrowser/RepositoryTableViewCell.swift
+index c20a7ba..04aa180 100644
+--- a/GithubBrowser/RepositoryTableViewCell.swift
++++ b/GithubBrowser/RepositoryTableViewCell.swift
+@@ -94,10 +94,10 @@ class RepositoryTableViewCell: UITableViewCell {
+             if let fork = currentRep.forksCount {
+                 forksLabel.text = "\(fork) forks"
+             }
+-            if let img = currentRep.owner.avatarImg {
+-                let avatarImg = UIImage(data: img)
+-                avatarImageView.image = avatarImg
+-            }
++//            if let img = currentRep.owner.avatarImg {
++//                let avatarImg = UIImage(data: img)
++//                avatarImageView.image = avatarImg
++//            }
+         }
+     }
+     
