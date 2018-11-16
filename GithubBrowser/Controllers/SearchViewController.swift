@@ -92,9 +92,8 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = contenTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
         let repository = gitRepositoryList.repositoryListArray[indexPath.row]
-        cell.repositoryToCell = repository
-        cell.searchWordSignal = searchProjectBar.text
-        gitRepositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, closure: { image in
+        cell.pushInfoToCell(from: repository, searchWordSignal: searchProjectBar.text)
+        gitRepositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, completion: { image in
             cell.avatarImageView.image = image
         })
         return cell
@@ -136,11 +135,15 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         self.loadMoreStatus = true
         lastRepositoryId += 1
         let newArray = GetRepositoryInfo()
-        newArray.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchProjectBar.text!)&page=\(lastRepositoryId)&per_page=100", closure: { [weak self] in
+        newArray.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchProjectBar.text!)&page=\(lastRepositoryId)&per_page=100", completion: { [weak self] in
             DispatchQueue.main.async {
-//                newArray.makeImgFromUrl()
+                let lastRowBefore = (self?.gitRepositoryList.repositoryListArray.count)! - 1
                 self?.gitRepositoryList.repositoryListArray += newArray.repositoryListArray
-                self?.contenTableView.reloadData()
+                var indexPathArray = [IndexPath]()
+                for row in newArray.repositoryListArray.indices {
+                    indexPathArray.append(IndexPath(row: row + lastRowBefore, section: 0))
+                }
+                self?.contenTableView.insertRows(at: indexPathArray, with: .automatic)
                 self?.tableLoadIndicator.stopAnimating()
                 self?.footerView.isHidden = true
                 self?.loadMoreStatus = false
@@ -165,9 +168,8 @@ extension SearchViewController: UISearchBarDelegate {
             loadIndicator.startAnimating()
             contenTableView.isHidden = true
             gitRepositoryList = GetRepositoryInfo()
-            gitRepositoryList.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchText)&per_page=100", closure: { [weak self] in
+            gitRepositoryList.getArray(controllerType: .search, url: "https://api.github.com/search/repositories?q=\(searchText)&per_page=100", completion: { [weak self] in
                 DispatchQueue.main.async {
-//                    self?.gitRepositoryList.makeImgFromUrl()
                     self?.contenTableView.reloadData()
                     self?.loadIndicator.stopAnimating()
                     self?.loadIndicator.isHidden = true

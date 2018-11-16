@@ -51,9 +51,8 @@ class BrowseViewController: UIViewController {
         if !isLoadedRepository {
             isLoadedRepository = true
             loadIndicator.startAnimating()
-            gitRepositoryList.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=1&per_page=100", closure: { [weak self] in
+            gitRepositoryList.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=1&per_page=100", completion: { [weak self] in
                 DispatchQueue.main.async {
-//                    self?.gitRepositoryList.makeImgFromUrl()
                     self?.browseTableView.reloadData()
                     self?.loadIndicator.stopAnimating()
                     self?.loadIndicator.isHidden = true
@@ -81,8 +80,8 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = browseTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
         let repository = gitRepositoryList.repositoryListArray[indexPath.row]
-        cell.repositoryToCell = repository
-        gitRepositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, closure: { image in
+        cell.pushInfoToCell(from: repository, searchWordSignal: nil)
+        gitRepositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, completion: { image in
             cell.avatarImageView.image = image
         })
         return cell
@@ -126,11 +125,15 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
                 let count = gitRepositoryList.repositoryListArray.count
                 lastRepositoryId = gitRepositoryList.repositoryListArray[count-1].id
                 let newArray = GetRepositoryInfo()
-                newArray.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=\(lastRepositoryId)&per_page=100", closure: { [weak self] in
+                newArray.getArray(controllerType: .browse, url: "https://api.github.com/repositories?since=\(lastRepositoryId)&per_page=100", completion: { [weak self] in
                     DispatchQueue.main.async {
-//                        newArray.makeImgFromUrl()
+                        let lastRowBefore = (self?.gitRepositoryList.repositoryListArray.count)! - 1
                         self?.gitRepositoryList.repositoryListArray += newArray.repositoryListArray
-                        self?.browseTableView.reloadData()
+                        var indexPathArray = [IndexPath]()
+                        for row in newArray.repositoryListArray.indices {
+                            indexPathArray.append(IndexPath(row: row + lastRowBefore, section: 0))
+                        }
+                        self?.browseTableView.insertRows(at: indexPathArray, with: .automatic)
                         self?.tableLoadIndicator.stopAnimating()
                         self?.footerView.isHidden = true
                         self?.loadMoreStatus = false

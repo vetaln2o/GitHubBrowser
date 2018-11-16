@@ -53,6 +53,10 @@ struct RepositorySearch: Decodable {
     var items: [RepositoryDetail]
 }
 
+struct ErrorHandle: Decodable {
+    var message: String?
+}
+
 class GetRepositoryInfo {
     
     var repositoryListArray = [RepositoryDetail]()
@@ -83,47 +87,41 @@ class GetRepositoryInfo {
                     completion(result.items)
                 }
 
-            } catch let error {
-                print(error)
+            } catch {
+                do {
+                    let errorMessage = try JSONDecoder().decode(ErrorHandle.self, from: data!)
+                    print("Error Message from API: " + (errorMessage.message ?? ""))
+                } catch let error {
+                    print(error)
+                }
             }
             }.resume()
         
     }
 
     //Completion of adding data, which receiver from JSON to Array of RepoDetail
-    func getArray(controllerType: ControllerType, url: String, closure: @escaping () -> ()) {
+    func getArray(controllerType: ControllerType, url: String, completion: @escaping () -> ()) {
         repositoryListArray = [RepositoryDetail]()
         getRepositoryArray(controllerType: controllerType, urlString: url) { (result) in
             for i in result.indices {
                 self.repositoryListArray.append(result[i])
                 if i == result.indices.max() {
-                    closure()
+                    completion()
                 }
             }
         }
     }
+
     
-    //Get images from server and convert to Data format (added to current Array of Repositories)
-//    func makeImgFromUrl() {
-//        for index in self.repositoryListArray.indices {
-//            DispatchQueue.global().async {
-//                let imageUrl = URL(string: self.repositoryListArray[index].owner.avatarUrl)
-//                let imageData = try! Data(contentsOf: imageUrl!)
-//                self.repositoryListArray[index].owner.avatarImg = imageData
-//
-//            }
-//        }
-//    }
-    
-    func imageFromServerURL(urlString: String, closure: @escaping (UIImage) -> ()) {
-        URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
+    //Get images from server and convert to Image format (added to current Array of Repositories)
+    func imageFromServerURL(urlString: String, completion: @escaping (UIImage) -> ()) {
+        URLSession.shared.dataTask(with: URL(string: urlString)!, completionHandler: { (data, response, error) -> Void in
             DispatchQueue.main.async(execute: {
                 if let data = data {
                     let image = UIImage(data: data)
-                    closure(image ?? UIImage())
+                    completion(image ?? UIImage())
                 }
             })
-            
         }).resume()
     }
     

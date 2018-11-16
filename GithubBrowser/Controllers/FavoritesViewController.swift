@@ -77,7 +77,13 @@ extension FavoritesViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = favoritesTableView.dequeueReusableCell(withIdentifier: tableIdentifier) as! RepositoryTableViewCell
-        cell.repositoryToCell = favoritesListArray[indexPath.row]
+        let repositoryList = GetRepositoryInfo()
+        repositoryList.repositoryListArray = favoritesListArray
+        let repository = repositoryList.repositoryListArray[indexPath.row]
+        cell.pushInfoToCell(from: favoritesListArray[indexPath.row], searchWordSignal: nil)
+        repositoryList.imageFromServerURL(urlString: repository.owner.avatarUrl, completion: { image in
+            cell.avatarImageView.image = image
+        })
         cell.shouldIndentWhileEditing = true
         return cell
     }
