@@ -61,10 +61,18 @@ class FavoritesViewController: UIViewController {
     }
     
     private func addConstraints() {
-        favoritesTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-        favoritesTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        favoritesTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
-        favoritesTableView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor).isActive = true
+        if #available(iOS 11.0, *) {
+            favoritesTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
+            favoritesTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+            favoritesTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+            favoritesTableView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor).isActive = true
+        } else {
+            favoritesTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+            favoritesTableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            favoritesTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+            favoritesTableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        }
+        
     }
     
 }

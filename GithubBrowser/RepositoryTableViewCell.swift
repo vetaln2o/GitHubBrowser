@@ -68,6 +68,10 @@ class RepositoryTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        avatarImageView.image = UIImage()
+    }
+    
     func pushInfoToCell(from repository: RepositoryDetail, searchWordSignal: String?) {
         
         self.repositoryToCell = repository

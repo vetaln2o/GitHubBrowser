@@ -144,9 +144,16 @@ class RepositoryReadmeViewController: UIViewController {
     }
 
     private func addConstraints() {
-        readmeTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        readmeTextView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
-        readmeTextView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        if #available(iOS 11.0, *) {
+            readmeTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+            readmeTextView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+            readmeTextView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        } else {
+            readmeTextView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            readmeTextView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+            readmeTextView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        }
+        
     }
     
 }

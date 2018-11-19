@@ -72,14 +72,26 @@ class SearchViewController: UIViewController {
     
     private func addConstraints() {
 
-        searchProjectBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        searchProjectBar.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
-        searchProjectBar.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        if #available(iOS 11.0, *) {
+            searchProjectBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+            searchProjectBar.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+            searchProjectBar.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+            
+            contenTableView.topAnchor.constraint(equalTo: searchProjectBar.bottomAnchor).isActive = true
+            contenTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
+            contenTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+            contenTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+        } else {
+            searchProjectBar.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            searchProjectBar.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+            searchProjectBar.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+            
+            contenTableView.topAnchor.constraint(equalTo: searchProjectBar.bottomAnchor).isActive = true
+            contenTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+            contenTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+            contenTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        }
         
-        contenTableView.topAnchor.constraint(equalTo: searchProjectBar.bottomAnchor).isActive = true
-        contenTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-        contenTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        contenTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
     }
 }
 

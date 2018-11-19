@@ -63,10 +63,18 @@ class BrowseViewController: UIViewController {
     }
     
     private func addConstraints() {
-        browseTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-        browseTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        browseTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
-        browseTableView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor).isActive = true
+        if #available(iOS 11.0, *) {
+            browseTableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
+            browseTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+            browseTableView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+            browseTableView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor).isActive = true
+        } else {
+            browseTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+            browseTableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            browseTableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+            browseTableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        }
+        
     }
     
 }
@@ -99,7 +107,7 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //Open README.md file in WebView
+        //Open README.md file
         let readmeVC = RepositoryReadmeViewController()
         readmeVC.repositoryDetail = gitRepositoryList.repositoryListArray[indexPath.row]
         self.navigationController?.pushViewController(readmeVC, animated: true)
@@ -113,8 +121,10 @@ extension BrowseViewController: UITableViewDelegate, UITableViewDataSource {
         
         if deltaOffset <= 0 {
             footerView.isHidden = false
+            scrollView.isScrollEnabled = false
             tableLoadIndicator.startAnimating()
             loadTableAfterScroll()
+            scrollView.isScrollEnabled = true
         }
     }
     
